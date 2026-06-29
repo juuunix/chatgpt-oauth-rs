@@ -1,0 +1,45 @@
+[package]
+name = "chatgpt-oauth-rs"
+version = "0.1.0"
+edition = "2024"
+description = "Pure low-level client for the ChatGPT backend (chatgpt.com/backend-api/codex/responses) using ChatGPT subscription OAuth tokens instead of a paid API key. SDK-style only — no chat session, no history, no REPL."
+
+# Package is `chatgpt-oauth-rs`, but the import path stays `chatgpt_oauth`
+# (the `-rs` suffix is just a repo/crates.io disambiguator).
+[lib]
+name = "chatgpt_oauth"
+
+[features]
+# Diagnostic raw-response capture module (`chatgpt_oauth::capture`). Off by
+# default so it doesn't pollute the public API. When on, dumps each endpoint's
+# pre-parse response so backend changes can be inspected by eye.
+capture = []
+
+[dependencies]
+anyhow = "1.0.102"
+base64 = "0.22.1"
+bytes = "1.11.1"
+dirs = "6.0.0"
+fs2 = "0.4.3"
+futures-util = "0.3.32"
+reqwest = { version = "0.13.4", default-features = false, features = ["form", "json", "rustls", "stream"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.150"
+thiserror = "2.0.18"
+# Used for base_url host validation: a real URL parser instead of string
+# splitting (manual parsing was vulnerable to `https://evil.com#@chatgpt.com`).
+url = "2.5"
+# default-features off drops the tracing-attributes dep used by `#[instrument]`;
+# we only use the warn!/debug! macros (minimize deps and build).
+tracing = { version = "0.1.41", default-features = false, features = ["std"] }
+tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros", "io-util", "fs", "time", "sync"] }
+
+[dev-dependencies]
+# Test-only mock HTTP server. Not included in release binaries.
+wiremock = "0.6"
+
+# The capture example (a live-API capture tool) builds only with the `capture`
+# feature, so a plain `cargo build` skips it (no CI / normal-build impact).
+[[example]]
+name = "capture"
+required-features = ["capture"]
